@@ -1,0 +1,29 @@
+{
+  "name": "arrow",
+  "version": "0.0.1",
+  "homepage": "https://github.com/celber/arrow",
+  "authors": [
+    "Dariusz Jakubowski <celber@me.com>"
+  ],
+  "description": "Geocaching app",
+  "main": "index.html",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "geocaching"
+  ],
+  "license": "GNU",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "normalize": "~1.0.4",
+    "compass.js": "ai/compass.js#~0.1.1"
+  }
+}
