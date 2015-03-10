@@ -23,7 +23,11 @@
     "tests"
   ],
   "dependencies": {
-    "normalize": "~1.0.4",
-    "compass.js": "ai/compass.js#~0.1.1"
+    "compass.js": "ai/compass.js#~0.1.1",
+    "normalize.css": "~3.0.2",
+    "fontawesome": "~4.3.0",
+    "jquery": "~2.1.3",
+    "foundation": "~5.5.1",
+    "geodesy": "chrisveness/geodesy"
   }
 }

@@ -7,15 +7,58 @@
   <title>Arrow</title>
   <meta name="description" content="Browser geochaching tool">
   <meta name="author" content="Dariusz Jakubowski <celber@me.com>">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <link rel="stylesheet" href="bower_components/foundation/css/normalize.css">
+  <link rel="stylesheet" href="bower_components/foundation/css/foundation.css">
   <link rel="stylesheet" href="css/styles.css?v=1.0">
+  <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.min.css">
 
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
+  
+  
+  <script src="js/mvc.js"></script>
+  <script src="js/LocationModel.js"></script>
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="bower_components/foundation/js/foundation.min.js"></script>
+  <script src="bower_components/compass.js/lib/compass.js"></script>
+  <script src="bower_components/geodesy/vector3d.js"></script>
+  <script src="bower_components/geodesy/latlon-ellipsoidal.js"></script>
+  <script src="bower_components/geodesy/latlon-vincenty.js"></script>
+  <script src="bower_components/geodesy/dms.js"></script>
 </head>
 
-<body>
+<body class="container">
+	<div class="row">
+		<div class="position small-6 small-push-6 columns">
+			<i class="fa fa-arrows-h"></i><div class="latitude"></div></br>
+			<i class="fa fa-arrows-v"></i><div class="longitude"></div></br>
+			<i class="fa fa-arrow-up"></i><div class="altitude"></div></br>
+		</div>
+			
+		<div class="target small-6 small-pull-6 columns">
+			<i class="fa fa-arrows-h"></i><div class="latitude"></div></br>
+			<i class="fa fa-arrows-v"></i><div class="longitude"></div></br>
+			<i class="fa fa-arrow-up"></i><div class="altitude"></div></br>
+		</div>
+	</div>
+	
+	<div class="row">		
+		<div id="compass" class="small-12 small-text-center">
+			<i class="fa fa-arrow-circle-up"></i>
+		</div>
+	</div>
+	
+	<div id="distance">
+		
+	</div>
+		
+	<div id="title">
+		
+	</div>
+	
   <script src="js/scripts.js"></script>
 </body>
 </html>
