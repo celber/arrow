@@ -18,7 +18,7 @@
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
   
-  
+  <script src="bower_components/class.js/src/class.js"></script>
   <script src="js/mvc.js"></script>
   <script src="js/LocationModel.js"></script>
   <script src="bower_components/jquery/dist/jquery.min.js"></script>
@@ -32,16 +32,16 @@
 
 <body class="container">
 	<div class="row">
-		<div class="position small-6 small-push-6 columns">
-			<i class="fa fa-arrows-h"></i><div class="latitude"></div></br>
-			<i class="fa fa-arrows-v"></i><div class="longitude"></div></br>
-			<i class="fa fa-arrow-up"></i><div class="altitude"></div></br>
+		<div class="target small-6 small-push-6 columns">
+			<i class="fa fa-arrows-h latitude"></i><br/>
+			<i class="fa fa-arrows-v longitude"></i><br/>
+			<i class="fa fa-arrow-up altitude"></i>
 		</div>
 			
-		<div class="target small-6 small-pull-6 columns">
-			<i class="fa fa-arrows-h"></i><div class="latitude"></div></br>
-			<i class="fa fa-arrows-v"></i><div class="longitude"></div></br>
-			<i class="fa fa-arrow-up"></i><div class="altitude"></div></br>
+		<div class="position small-6 small-pull-6 columns">
+			<i class="fa fa-arrows-h latitude"></i><br/>
+			<i class="fa fa-arrows-v longitude"></i><br/>
+			<i class="fa fa-arrow-up altitude"></i>
 		</div>
 	</div>
 	
@@ -54,11 +54,17 @@
 	<div id="distance">
 		
 	</div>
+	
+	<div id="bearing">
+		
+	</div>
+	<div id="heading">
+		
+	</div>
 		
 	<div id="title">
 		
 	</div>
-	
-  <script src="js/scripts.js"></script>
+	<script src="js/scripts.js"></script>
 </body>
 </html>

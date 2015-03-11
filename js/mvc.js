@@ -1,170 +1,21 @@
-function EmptyFn () {};
+function App() {};
 
-function Field (config) {
-	config = config || {};
-	
-	this.name = config.name;
-	if (config.setter) {
-		this.setter = config.setter;
-	}
-	if (config.getter) {
-		this.getter = config.getter;
-	}
-	if (config.defaultValue) {
-		this.value = config.defaultValue;
-	}
-}
+App.Base = new Class({});
 
-function Model (config) {
-	config = config || {};
-	var idx;
-	var key;
-	
-	this.init = config.init || EmptyFn;
-	
-	this.fields = {};
-	for (idx in config.fields) {
-		key = config.fields[idx];
-		this.fields[key] = new Field({
-			name: key,
-			setter: (config.setters || {})[key],
-			getter: (config.getters || {})[key],
-			defaultvalue: (config.defaultvalues || {})[key]
-		});
-	}
-	
-	if (config.data) {
-		this.setData(config.data, true);
-	}
-	
-	Observable.call(this, config);
-	
-	this.init.call(this);
-}
-
-Model.prototype = Observable.prototype;
-
-Model.prototype.setValue = function (name, value, silent) {
-		var field;
-		
-		if (this.fields.hasOwnProperty(name)) {
-			field = this.fields[name]; 
-		} else {
-			throw "field does not exist";
+App.Observable = {
+	addEvent: function (name) {
+		if (!this.events) {
+			this.events = {};
 		}
-		
-		if (field.hasOwnProperty('setter')) {
-			field.value = field.setter.call(this, value);
-		} else {
-			this.setRawValue(name, value, silent);
-		}
-		
-		if (!silent) {
-			this.fireEvent('update');
-		}
-		
-		return value;
-	};
-
-Model.prototype.setRawValue = function (name, value, silent) {
-		this.fields[name].value = value;
-		if (!silent) {
-			this.fireEvent('update');
-		}
-		return value;
-	};
-	
-Model.prototype.getValue = function (name) {
-		var field = this.fields[name]
-		if (field.hasOwnProperty('getter')) {	
-			return field.getter.call(this, field, value);
-		} else {
-			return field.value;
-		}
-		
-	};
-	
-Model.prototype.getRawValue = function (name) {
-		return this.fields[name].value;
-	};
-	
-Model.prototype.setData = function (data, silent) {
+		this.events[name] = this.events[name] || [];
+	},
+	addEventListener: function (event, handler) {
 		//@chainable
-		var key;
-		for (key in data) {
-			this.setValue(key, data[key], silent);
-		}
-		return this;
-	};
-	
-Model.prototype.setRawData = function (data) {
-		//@chainable
-		var key;
-		for (key in data) {
-			this.setRawValue(key, data[name]);
-		}
-		return this;
-	};
 
-
-function View (config) {
-	config = config || {};
-	this.init = config.init || EmptyFn;
-	if (typeof config.el == "string") {
-		this.el = document.querySelector(config.el);
-	} else {
-		this.el = config.el;
-	}
-	
-	for (key in config) {
-		this[key] = config[key];
-	}
-	
-	Observable.call(this, config);
-	
-	this.init.call(this);
-} 
-
-View.prototype = Observable.prototype;
-
-function Controller (config) {
-	config = config || {};
-	var key;
-	
-	this.init = config.init || EmptyFn;
-	
-	for (key in config) {
-		this[key] = config[key];
-	}
-	
-	Observable.call(this, config);
-	
-	this.init.call(this);
-} 
-
-Controller.prototype = Observable.prototype;
-
-function Observable (config) {
-	config = config || {};
-	var me = this;
-	this.events = {};
-	
-	(config.events || []).forEach(function (elem) {
-		me.events[elem] = [];
-	});
-}
-
-Observable.prototype.addEventListener = function (event, handler) {
-		//@chainable
-		
-		if (!this.events.hasOwnProperty(event)) {
-			this.events[event] = [];
-		}
-		
 		this.events[event].push(handler);
 		return this;
-	};
-Observable.prototype.removeEventListener = function (event, handler) {
+	},
+	removeEventListener: function (event, handler) {
 		//@chainable
 		var i,eventHandlers;
 		if (this.events.hasOwnProperty(event)) {
@@ -174,8 +25,8 @@ Observable.prototype.removeEventListener = function (event, handler) {
 		}
 		
 		return this;
-	};
-Observable.prototype.fireEvent = function (event) {
+	},
+	fireEvent: function (event) {
 		var me = this;
 		var result = true;
 	
@@ -186,4 +37,173 @@ Observable.prototype.fireEvent = function (event) {
 		});
 
 		return result;
-	};
+	}
+};
+
+function EmptyFn () {};
+
+App.Field = new Class({
+	initialize: function (config) {
+		config = config || {};
+		
+		this.name = config.name;
+		if (config.setter) {
+			this.setter = config.setter;
+		}
+		if (config.getter) {
+			this.getter = config.getter;
+		}
+		
+		if (config.value) {
+			this.setValue(config.value);
+		} else if (config.defaultValue) {
+			this.value = config.defaultValue;
+		} else {
+			this.setValue(null);
+		}
+	},
+	getValue: function () {
+		if (this.hasOwnProperty('getter')) {	
+			return this.getter.call(this);
+		} else {
+			return this.value;
+		}
+	},
+	getRawValue: function () {
+		return this.value;
+	},
+	setValue: function (value) {
+		if (this.hasOwnProperty('setter')) {	
+			return this.setter.call(this, value);
+		} else {
+			return this.setRawValue(value);
+		}
+	},
+	setRawValue: function (value) {
+		return this.value = value;
+	}
+});
+
+App.Model = new Class(App.Base);
+App.Model.implement([App.Observable]);
+
+App.Model.extend({
+	initialize: function (config) {
+		config = config || {};
+		var idx;
+		var key;
+		
+		this.addEvent("update");
+		
+		for (idx in config.fields) {
+			key = config.fields[idx];
+			this.addField({
+				name: key,
+				setter: (config.setters || {})[key],
+				getter: (config.getters || {})[key],
+				defaultValue: (config.defaultvalues || {})[key]
+			});
+		}
+		
+		if (config.data) {
+			this.setData(config.data, true);
+		}
+	},
+	addField: function (field) {
+		if (!this.fields) {
+			this.fields = {};
+		}
+		this.fields[field.name] = new App.Field(field);
+	},
+	setValue: function (name, value, silent) {
+		var field;
+		
+		if (this.fields.hasOwnProperty(name)) {
+			field = this.fields[name]; 
+		} else {
+			throw "field does not exist";
+		}
+		
+		value = field.setValue(value);
+		
+		if (!silent) {
+			this.fireEvent('update');
+		}
+		
+		return value;
+	},
+	setRawVaue: function (name, value, silent) {
+		if (this.fields.hasOwnProperty(name)) {
+			field = this.fields[name]; 
+		} else {
+			throw "field does not exist";
+		}
+		
+		this.fields[name].setRawValue(value);
+		if (!silent) {
+			this.fireEvent('update');
+		}
+		return value;
+	},
+	getValue: function (name) {
+		var field = this.fields[name];
+		return field.getValue();
+	},
+	getRawValue: function (name) {
+		return this.fields[name].getRawValue();
+	},
+	setData: function (data, silent) {
+		//@chainable
+		var key;
+		for (key in data) {
+			this.setValue(key, data[key], silent);
+		}
+		return this;
+	},
+	setRawValue: function (data) {
+		//@chainable
+		var key;
+		for (key in data) {
+			this.setRawValue(key, data[name]);
+		}
+		return this;
+	}
+});
+
+App.View = new Class(App.Base);
+
+App.View.extend({
+	initialize: function (config) {
+		config = config || {};
+		this.init = config.init || EmptyFn;
+		if (typeof config.el == "string") {
+			this.el = document.querySelector(config.el);
+		} else {
+			this.el = config.el;
+		}
+		
+		for (key in config) {
+			this[key] = config[key];
+		}
+		this.init.call(this);
+	}
+});
+App.View.implement([App.Observable]);
+
+App.Controller = new Class(App.Base);
+
+App.Controller.extend({
+	initialize: function (config) {
+		config = config || {};
+		var key;
+		
+		this.init = config.init || EmptyFn;
+		
+		for (key in config) {
+			this[key] = config[key];
+		}	
+		
+		this.init.call(this);
+	}
+});
+App.Controller.implement([App.Observable]);
