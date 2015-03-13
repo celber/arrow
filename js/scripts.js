@@ -1,3 +1,5 @@
+var POSITION_UPDATE_INTERVAL = 10000;
+
 var CurrentLocation = new App.LocationModel({});
 var DestinationLocation = new App.LocationModel({
 	fields: ['bearing'],
@@ -23,7 +25,7 @@ var MainController = new App.Controller({
 		navigator.geolocation.getCurrentPosition(me.updateCurrentLocationModel);
 		setInterval(function() {
 			navigator.geolocation.getCurrentPosition(me.updateCurrentLocationModel);
-		}, 1000);
+		}, POSITION_UPDATE_INTERVAL);
 	},
 	updateCurrentLocationModel: function(location) {
 		CurrentLocation.setCoords(location.coords);
@@ -44,13 +46,16 @@ var MainController = new App.Controller({
 });
 
 var MainView = new App.View({
-	currentLatEl: ".position .latitude",
-	currentLngEl: ".position .longitude",
-	currentAltEl: ".position .altitude",
-	destinationLatEl: ".target .latitude",
-	destinationLngEl: ".target .longitude",
-	destinationAltEl: ".target .altitude",
+	currentLatEl: "#position .latitude",
+	currentLngEl: "#position .longitude",
+	currentAltEl: "#position .altitude",
+	destinationLatEl: "#target .latitude",
+	destinationLngEl: "#target .longitude",
+	destinationAltEl: "#target .altitude",
 	distanceEl: "#distance",
+	directionArrowEl: '#direction .direction-arrow',
+	headingEl: '#heading',
+	compassShieldEl: "#compass .shield",
 	updateCurrentPosition: function(lat, lng, alt) {
 		var me = this;
 		$(me.currentLatEl).text(lat);
@@ -63,7 +68,14 @@ var MainView = new App.View({
 	},
 	updateDestinationDistance: function(coords) {
 		var me = this;
-		$(me.distanceEl).text(coords.distanceTo(DestinationLocation.getCoords()).toFixed(2)+"m");
+		
+		var raw = coords.distanceTo(DestinationLocation.getCoords()).toFixed(3);
+		
+		var wholes = raw.split(".")[0];
+		var decimals = raw.split(".")[1];
+			
+	
+		$(me.distanceEl).html("<div class='distance'><div class='wholes'>"+wholes+"</div><div class='decimals'>."+decimals+"</div><div class='unit'>m</div></div>");
 	},
 	setDestinationPosition: function () {
 		var me = this;
@@ -73,9 +85,17 @@ var MainView = new App.View({
 		$(me.destinationLngEl).text(destinationPoint.getValue('lng'));
 		$(me.destinationAltEl).text(destinationPoint.getValue('alt'));	
 	},
+	headDirectionArrow: function (heading) {
+		var me = this;
+		var bearing = DestinationLocation.getValue('bearing');
+		$(me.compassShieldEl).css('transform', 'rotate(' + (-heading) + 'deg)');
+		$(me.directionArrowEl).css('transform', 'rotate(' + (-heading+bearing) + 'deg)');
+		$(me.headingEl).text(heading.toFixed()+"°");
+	},
 	init: function() {
 		var me = this;
 		me.setDestinationPosition();
+
 		CurrentLocation.addEventListener("update", function() {
 			var coords = this.getCoords();
 			var localeCoors = coords.toLocaleString();
@@ -85,9 +105,10 @@ var MainView = new App.View({
 			me.updateCurrentPosition(localLat, localLng, localAlt);
 			me.updateDestinationDistance(coords);
 		});
-		Compass.watch(function(heading) {
-			var bearing = DestinationLocation.getValue('bearing');
-			$('#compass').css('transform', 'rotate(' + (-heading+bearing) + 'deg)');
-		});
+		Compass.watch((function (scope) {
+			return function(heading) {
+				scope.headDirectionArrow.call(scope, heading);
+			}
+		}(me)));
 	}
 });

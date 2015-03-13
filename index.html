@@ -31,39 +31,40 @@
 </head>
 
 <body class="container">
+	<div id="navigation" class="row">		
+		<div id="direction" class="small-6 small-text-center columns">
+			<div class="direction-arrow">&nbsp;</div>
+		</div>
+		<div id="compass" class="small-6 small-text-center columns">
+			<div id="signal-strength">No signal</div>
+			<div class="direction-arrow">&nbsp;</div>
+			<div class="shield">&nbsp;</div>
+				<div id="heading" class="small-12 small-text-center columns">21345</div>
+		</div>
+	</div>
 	<div class="row">
-		<div class="target small-6 small-push-6 columns">
-			<i class="fa fa-arrows-h latitude"></i><br/>
-			<i class="fa fa-arrows-v longitude"></i><br/>
-			<i class="fa fa-arrow-up altitude"></i>
+		<div id="distance" class="small-12 small-text-center columns">
+			
+		</div>
+	</div>
+	<div class="row">
+		<div id="target" class="small-6 small-push-6 columns">
+			<div class="latitude"></div>
+			<div class="longitude"></div>
+			<div class="altitude"></div>
 		</div>
 			
-		<div class="position small-6 small-pull-6 columns">
-			<i class="fa fa-arrows-h latitude"></i><br/>
-			<i class="fa fa-arrows-v longitude"></i><br/>
-			<i class="fa fa-arrow-up altitude"></i>
+		<div id="position" class="small-6 small-pull-6 columns">
+			<div class="latitude"></div>
+			<div class="longitude"></div>
+			<div class="altitude"></div>
 		</div>
 	</div>
 	
-	<div class="row">		
-		<div id="compass" class="small-12 small-text-center">
-			<i class="fa fa-arrow-circle-up"></i>
+	<div class="row">
+		<div id="radar" class="small-12 small-text-center columns">
+			&nbsp;
 		</div>
-	</div>
-	
-	<div id="distance">
-		
-	</div>
-	
-	<div id="bearing">
-		
-	</div>
-	<div id="heading">
-		
-	</div>
-		
-	<div id="title">
-		
 	</div>
 	<script src="js/scripts.js"></script>
 </body>

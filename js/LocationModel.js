@@ -44,9 +44,18 @@ App.LocationModel.extend({
 	},
 	altGetter: function () {
 		var raw = this.getRawValue('alt');
+		var wholes;
+		var decimals;
 		if (raw == 0) {
 			return "not available"
-		} else {
+		} else {/*
+
+			wholes = raw.toFixed();
+			decimals = raw.toFixed(2) - wholes;
+			
+			return "<div class='distance'><div class='wholes'>"+wholes+"</div><div class='decimals'>"+decimals+"</div><div class='unit'>m</div></div>"
+*/
+			
 			return raw.toFixed(1)+"m"
 		}
 	}
