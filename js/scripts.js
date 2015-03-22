@@ -1,28 +1,24 @@
-var CurrentLocation = new(App.LocationModel.extend({
-	beforeUpdate: function(coords) {
+var CurrentLocation = new App.LocationModel({
+		fields: ['accuracy'],
+		getters: {
+			accuracy: function(value) {
+				return value.toFixed(0);
+			}
+		}
+	});
+	CurrentLocation.beforeUpdate = function(coords) {
 		// silent update accuracy
 		this.setValue('accuracy', coords.accuracy, true);
-	}
-}))({
-	fields: ['accuracy'],
-	getters: {
-		accuracy: function(value) {
-			return value.toFixed(0);
-		}
-	}
-});
+	};
+	
 var DestinationLocation = new App.LocationModel({
-	fields: ['bearing'],
-	data: {
-		lat: 54.403041,
-		lng: 18.590118,
-		alt: 90
-	}
+	fields: ['bearing']
 });
 var MainController = new App.Controller({
 	init: function() {
 		var me = this;
 		var queryParams = me.parseQueryString();
+		//TODO: handle errors
 		Compass.needGPS(function() {
 			$('.go-outside-message').show(); // Step 1: we need GPS signal
 		}).needMove(function() {
@@ -38,10 +34,24 @@ var MainController = new App.Controller({
 			enableHighAccuracy: true,
 			maximumAge: Infinity
 		});
+		
+		if ("lat" in queryParams && "lng" in queryParams) {
+			me.setDestinationLocationModel(Number(queryParams.lat), Number(queryParams.lng), Number(queryParams.alt || 0));	
+		} else {
+			me.setDestinationLocationModel(54.403041, 18.590118, 5);
+		}
+		
 	},
 	updateCurrentLocationModel: function(location) {
 		CurrentLocation.setCoords(location.coords);
 		DestinationLocation.setValue('bearing', CurrentLocation.getCoords().finalBearingTo(DestinationLocation.getCoords()))
+	},
+	setDestinationLocationModel: function(lat, lng, alt) {
+		DestinationLocation.setCoords({
+			latitude: lat,
+			longitude: lng,
+			altitude: alt
+		});
 	},
 	parseQueryString: function() {
 		var str = window.location.search;
@@ -53,12 +63,12 @@ var MainController = new App.Controller({
 		return objURL;
 	},
 	views: {
-		mainView: function() {
-			return App.MainView
+		proView: function() {
+			return App.ProView
 		}
 	}
 });
-var MainView = new App.View({
+var ProView = new App.View({
 	currentLatEl: "#position .latitude",
 	currentLngEl: "#position .longitude",
 	currentAltEl: "#position .altitude",

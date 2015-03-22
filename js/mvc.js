@@ -167,6 +167,10 @@ App.Model.extend({
 			this.setRawValue(key, data[name]);
 		}
 		return this;
+	},
+	beforeUpdate: function () {
+		//@template
+		//do here additional changes before 'update' is fired
 	}
 });
 

@@ -43,10 +43,6 @@ App.LocationModel.extend({
 		var raw = this.getRawValue('lng');
 		return Dms.toLon(raw);	
 	},
-	beforeUpdate: function () {
-		//@template
-		//do here additional changes before 'update' is fired
-	},
 	altGetter: function () {
 		var raw = this.getRawValue('alt');
 		var wholes;
