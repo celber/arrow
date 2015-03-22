@@ -11,7 +11,7 @@
 
   <link rel="stylesheet" href="bower_components/foundation/css/normalize.css">
   <link rel="stylesheet" href="bower_components/foundation/css/foundation.css">
-  <link rel="stylesheet" href="css/styles.css?v=1.0">
+  <link rel="stylesheet" href="css/pro/styles.css?v=1.0">
   <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.min.css">
 
   <!--[if lt IE 9]>
@@ -28,6 +28,8 @@
   <script src="bower_components/geodesy/latlon-ellipsoidal.js"></script>
   <script src="bower_components/geodesy/latlon-vincenty.js"></script>
   <script src="bower_components/geodesy/dms.js"></script>
+  <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBd-Z6vj3mGSxpmRUqGf4oSJptv8VbDyW0"></script>
 </head>
 
 <body class="container">
@@ -36,10 +38,10 @@
 			<div class="direction-arrow">&nbsp;</div>
 		</div>
 		<div id="compass" class="small-6 small-text-center columns">
-			<div id="signal-strength">No signal</div>
+			<div id="signal-accuracy">0</div>
 			<div class="direction-arrow">&nbsp;</div>
 			<div class="shield">&nbsp;</div>
-				<div id="heading" class="small-12 small-text-center columns">21345</div>
+				<div id="heading" class="small-12 small-text-center columns degree"></div>
 		</div>
 	</div>
 	<div class="row">
@@ -49,21 +51,20 @@
 	</div>
 	<div class="row">
 		<div id="target" class="small-6 small-push-6 columns">
-			<div class="latitude"></div>
-			<div class="longitude"></div>
-			<div class="altitude"></div>
+			<div class="latitude">NOT AVAILABLE</div>
+			<div class="longitude">NOT AVAILABLE</div>
+			<div class="altitude">NOT AVAILABLE</div>
 		</div>
 			
 		<div id="position" class="small-6 small-pull-6 columns">
-			<div class="latitude"></div>
-			<div class="longitude"></div>
-			<div class="altitude"></div>
+			<div class="latitude">NOT AVAILABLE</div>
+			<div class="longitude">NOT AVAILABLE</div>
+			<div class="altitude">NOT AVAILABLE</div>
 		</div>
 	</div>
 	
 	<div class="row">
-		<div id="radar" class="small-12 small-text-center columns">
-			&nbsp;
+		<div id="map" class="small-12 columns">
 		</div>
 	</div>
 	<script src="js/scripts.js"></script>

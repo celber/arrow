@@ -53,7 +53,7 @@ body {
 
 #heading {
 	position: relative;
-	bottom: -35px;
+	top: 50px;
 }
 
 #compass .shield {
@@ -69,12 +69,25 @@ body {
 	right: calc(50% - 100px);
 }
 
-#signal-strength {
+#signal-accuracy {
 	color: #666;
 	display: block;
 	position: absolute;
 	right: 20px;
 	top: 10px;
+}
+
+#signal-accuracy:before {
+	content: "ACCURACY: ";
+}
+
+
+#signal-accuracy:after {
+	content: "m";
+}
+
+#map {
+	height: 400px;
 }
 
 #navigation {

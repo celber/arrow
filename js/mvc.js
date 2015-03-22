@@ -64,7 +64,7 @@ App.Field = new Class({
 	},
 	getValue: function () {
 		if (this.hasOwnProperty('getter')) {	
-			return this.getter.call(this);
+			return this.getter.call(this, this.value);
 		} else {
 			return this.value;
 		}
