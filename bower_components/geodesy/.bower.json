@@ -1,0 +1,14 @@
+{
+  "name": "geodesy",
+  "homepage": "https://github.com/chrisveness/geodesy",
+  "_release": "1b37016e76",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "1b37016e76bc6f3c0ef3b49fb7a8230fecaf1fd4"
+  },
+  "_source": "git://github.com/chrisveness/geodesy.git",
+  "_target": "*",
+  "_originalSource": "chrisveness/geodesy",
+  "_direct": true
+}
