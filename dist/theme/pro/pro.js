@@ -15,10 +15,13 @@ var DestinationLocation = new App.model.LocationModel({
 	fields: ['bearing']
 });
 
-var MainController = new App.controller.Controller({
-	initialize: function() {
+var MainController = new Class(App.controller.Controller);
+MainController.extend({
+	initialize: function(config) {
 		var me = this;
+		config = config || {};
 		var queryParams = me.parseQueryString();
+		
 		//TODO: handle errors
 		Compass.needGPS(function() {
 			$('.go-outside-message').show(); // Step 1: we need GPS signal
@@ -72,12 +75,18 @@ var MainController = new App.controller.Controller({
 	}
 });
 
-var MapView = new App.view.Map({
+MainController = new MainController();
+
+var MapView = new Class(App.view.Map);
+MapView.extend({
 	mapEl: '#map'
 });
+MapView = new MapView();
 
 
-var ProView = new App.view.View({
+
+var ProView = new Class(App.view.View)
+ProView.extend({
 	currentLatEl: "#position .latitude",
 	currentLngEl: "#position .longitude",
 	currentAltEl: "#position .altitude",
@@ -111,8 +120,9 @@ var ProView = new App.view.View({
 		var me = this;
 		$(me.signalAccuracyEl).text(accuracy);
 	},
-	initialize: function() {
+	initialize: function(config) {
 		var me = this;
+		config = config || {};
 		me.setDestinationPosition();
 		me.renderMap(52.187405, 18.896484, 8);
 		CurrentLocation.addEventListener("update", function() {
@@ -125,9 +135,14 @@ var ProView = new App.view.View({
 			me.updateCurrentPosition(localLat, localLng, localAlt);
 			me.updateDestinationDistance(coords);
 			me.updateSignalAccuracy(accuracy);
-			me.updateMap(this.getRawValue('lat'), this.getRawValue('lng'), 14, accuracy);
+			//me.updateMap(this.getRawValue('lat'), this.getRawValue('lng'), 14, accuracy);
 		});
 		
 		ProView._parent.initialize.call(this, config);
+	},
+	renderMap: function () {
+		
 	}
 });
+
+ProView = new ProView();

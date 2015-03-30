@@ -2,7 +2,11 @@ function App() {};
 
 function EmptyFn () {};
 
-App.Base = new Class({});
+App.Base = new Class({
+	initialize: function () {
+		//this.init.apply(this, arguments);
+	}
+});
 App.Observable = {
 	addEvent: function (name) {
 		if (!this.events) {
@@ -322,6 +326,7 @@ App.view.Map.extend({
 	},
 	initialize: function (config) {
 		var me = this;
+		config = config || {};
 		
 		me.mapEl = config.mapEl || me.mapEl;
 		me.mapStyle = config.mapStyle || me.mapStyle;

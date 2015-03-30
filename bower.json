@@ -30,6 +30,7 @@
     "foundation": "~5.5.1",
     "geodesy": "chrisveness/geodesy",
     "class.js": "~1.0.0",
-    "requirejs": "~2.1.16"
+    "requirejs": "~2.1.16",
+    "extjs": "~5.1.0-107"
   }
 }

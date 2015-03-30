@@ -31,6 +31,7 @@ App.view.Map.extend({
 	},
 	initialize: function (config) {
 		var me = this;
+		config = config || {};
 		
 		me.mapEl = config.mapEl || me.mapEl;
 		me.mapStyle = config.mapStyle || me.mapStyle;
