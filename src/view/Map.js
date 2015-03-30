@@ -3,24 +3,13 @@ App.view.Map = new Class(App.view.View);
 
 App.view.Map.extend({
 	mapEl: null,
-	mapCurrentPositionPolygon: {
-		strokeOpacity: 0.8,
-		strokeWeight: 2,
-		fillOpacity: 0.35,
-		radius: 10
-	},
+	mapCurrentPositionPolygon: null,
+	mapCurrentPositionPolygonStyle: null,
 	mapStyle: null,
-	mapOptions: {
-		disableDefaultUI: true,
-		scrollwheel: false,
-		navigationControl: false,
-		mapTypeControl: false,
-		scaleControl: false,
-		draggable: false,
-	},
+	mapOptions: null,
 	lat: 0,
 	lng: 0,
-	zoom: 10,
+	zoom: 14,
 	model: null,
 	headDirectionArrow: function(heading) {
 		var me = this;
@@ -35,11 +24,23 @@ App.view.Map.extend({
 		
 		me.mapEl = config.mapEl || me.mapEl;
 		me.mapStyle = config.mapStyle || me.mapStyle;
-		me.mapOptions = config.mapOptions || me.mapOptions;
+		me.mapOptions = config.mapOptions || {
+			disableDefaultUI: true,
+			scrollwheel: false,
+			navigationControl: false,
+			mapTypeControl: false,
+			scaleControl: false,
+			draggable: false,
+		};
 		me.lat = config.lat || me.lat;
 		me.lng = config.lng || me.lng;
 		me.zoom = config.zoom || me.zoom;
-		me.mapCurrentPositionPolygon = config.mapCurrentPositionPolygon || me.mapCurrentPositionPolygon;
+		me.mapCurrentPositionPolygonStyle = config.mapCurrentPositionPolygonStyle || {
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillOpacity: 0.35,
+			radius: 10
+		};
 		me.model = config.model || me.model;
 		
 		
@@ -47,12 +48,13 @@ App.view.Map.extend({
 		
 		me.model = me.model || new App.model.LocationModel({});
 		me.model.addEventListener('update', me.onLocationUpdate, me);
+		me.onLocationUpdate(me.model);
 		
 		App.model.LocationModel._parent.initialize.call(this, config);
 	},
 	onLocationUpdate: function (model) {
-		var coords = model.getCoors();
-		return me.updateMap(coords.lat, coords.lat, me.zoom, me.zoom);
+		var me = this;
+		return me.updateMap(model.getRawValue('lat'), model.getRawValue('lng'), Number(model.getValue('accuracy')), me.zoom);
 	},
 	renderMap: function(lat, lng, zoom) {
 		var me = this;
@@ -69,7 +71,7 @@ App.view.Map.extend({
 		me.map.setCenter(center);
 		me.map.setZoom(zoom);
 		
-		me.mapCurrentPositionPolygon = new google.maps.Circle(me.mapCurrentPositionPolygon);
+		me.mapCurrentPositionPolygon = new google.maps.Circle(me.mapCurrentPositionPolygonStyle);
 		
 		me.mapCurrentPositionPolygon.setCenter(center);
 		me.mapCurrentPositionPolygon.setMap(me.map);
@@ -81,7 +83,7 @@ App.view.Map.extend({
 		me.map.setCenter(location);
 		me.map.setZoom(zoom_ || 10);
 		me.mapCurrentPositionPolygon.setCenter(location);
-		me.mapCurrentPositionPolygon.setRadius(radius || 100);
+		me.mapCurrentPositionPolygon.setRadius(radius_ || 100);
 	},
 	setLocation: function (lat, lng, zoom_, accuracy_) {
 		//@chainable

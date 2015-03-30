@@ -18,14 +18,15 @@ module.exports = function(grunt) {
 				src: [
 					'src/Base.js',
 					'src/Observable.js',
-					'src/Field.js',
-					'src/Model.js',
-					'src/LocationModel.js',
-					'src/Controller.js',
-					'src/View.js',
-					'src/Map.js',
-					'src/Compass.js',
-					'src/App.js'
+					'src/model/Field.js',
+					'src/model/Model.js',
+					'src/model/LocationModel.js',
+					'src/controller/Controller.js',
+					'src/controller/GPS.js',
+					'src/view/View.js',
+					'src/view/Map.js',
+					'src/view/Compass.js',
+					'src/Arrow.js'
 				],
 				dest: 'dist/arrow.all.js',
 			},

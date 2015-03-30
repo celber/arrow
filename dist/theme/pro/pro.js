@@ -1,89 +1,118 @@
-var CurrentLocation = new App.model.LocationModel({
-		fields: ['accuracy'],
-		getters: {
-			accuracy: function(value) {
-				return value.toFixed(0);
-			}
-		}
-	});
-	CurrentLocation.beforeUpdate = function(coords) {
-		// silent update accuracy
-		this.setValue('accuracy', coords.accuracy, true);
-	};
-	
-var DestinationLocation = new App.model.LocationModel({
-	fields: ['bearing']
-});
-
-var MainController = new Class(App.controller.Controller);
-MainController.extend({
-	initialize: function(config) {
-		var me = this;
-		config = config || {};
-		var queryParams = me.parseQueryString();
-		
-		//TODO: handle errors
-		Compass.needGPS(function() {
-			$('.go-outside-message').show(); // Step 1: we need GPS signal
-		}).needMove(function() {
-			$('.go-outside-message').hide()
-			$('.move-and-hold-ahead-message').show(); // Step 2: user must go forward
-		}).init(function() {
-			$('.move-and-hold-ahead-message').hide(); // GPS hack is enabled
-		});
-		navigator.geolocation.watchPosition(me.updateCurrentLocationModel, function(err) {
-			console.log(err)
-		}, {
-			timeout: 2000,
-			enableHighAccuracy: true,
-			maximumAge: Infinity
-		});
-		
-		if ("lat" in queryParams && "lng" in queryParams) {
-			me.setDestinationLocationModel(Number(queryParams.lat), Number(queryParams.lng), Number(queryParams.alt || 0));	
-		} else {
-			me.setDestinationLocationModel(54.403041, 18.590118, 5);
-		}
-		
-		MainController._parent.initialize.call(this, config);
-		
-	},
-	updateCurrentLocationModel: function(location) {
-		CurrentLocation.setCoords(location.coords);
-		DestinationLocation.setValue('bearing', CurrentLocation.getCoords().finalBearingTo(DestinationLocation.getCoords()))
-	},
-	setDestinationLocationModel: function(lat, lng, alt) {
-		DestinationLocation.setCoords({
-			latitude: lat,
-			longitude: lng,
-			altitude: alt
-		});
-	},
-	parseQueryString: function() {
-		var str = window.location.search;
-		var objURL = {};
-		str.replace(
-		new RegExp("([^?=&]+)(=([^&]*))?", "g"), function($0, $1, $2, $3) {
-			objURL[$1] = $3;
-		});
-		return objURL;
-	},
-	views: {
-		proView: function() {
-			return App.ProView
-		}
-	}
-});
-
-MainController = new MainController();
-
 var MapView = new Class(App.view.Map);
 MapView.extend({
 	mapEl: '#map'
 });
-MapView = new MapView();
 
+MapView = new MapView({
+	model: App.model.CurrentLocation,
+	mapCurrentPositionPolygonStyle: {
+			strokeColor: '#47DD8E',
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillColor: '#3FC57E',
+			fillOpacity: 0.35,
+			radius: 10
+		},
+	mapStyle: [{
+				"featureType": "all",
+				"elementType": "labels.text.fill",
+				"stylers": [{
+					"color": "#ffffff"
+				}]
+			}, {
+				"featureType": "all",
+				"elementType": "labels.text.stroke",
+				"stylers": [{
+					"color": "#000000"
+				}, {
+					"lightness": 13
+				}]
+			}, {
+				"featureType": "administrative",
+				"elementType": "geometry.fill",
+				"stylers": [{
+					"color": "#000000"
+				}]
+			}, {
+				"featureType": "administrative",
+				"elementType": "geometry.stroke",
+				"stylers": [{
+					"color": "#144b53"
+				}, {
+					"lightness": 14
+				}, {
+					"weight": 1.4
+				}]
+			}, {
+				"featureType": "landscape",
+				"elementType": "geometry",
+				"stylers": [{
+					"color": "#08304b"
+				}]
+			}, {
+				"featureType": "poi",
+				"elementType": "all",
+				"stylers": [{
+					"visibility": "off"
+				}]
+			}, {
+				"featureType": "road.highway",
+				"elementType": "geometry.fill",
+				"stylers": [{
+					"color": "#000000"
+				}]
+			}, {
+				"featureType": "road.highway",
+				"elementType": "geometry.stroke",
+				"stylers": [{
+					"color": "#0b434f"
+				}, {
+					"lightness": 25
+				}]
+			}, {
+				"featureType": "road.arterial",
+				"elementType": "geometry.fill",
+				"stylers": [{
+					"color": "#000000"
+				}]
+			}, {
+				"featureType": "road.arterial",
+				"elementType": "geometry.stroke",
+				"stylers": [{
+					"color": "#0b3d51"
+				}, {
+					"lightness": 16
+				}]
+			}, {
+				"featureType": "road.local",
+				"elementType": "geometry",
+				"stylers": [{
+					"color": "#000000"
+				}]
+			}, {
+				"featureType": "transit",
+				"elementType": "all",
+				"stylers": [{
+					"color": "#146474"
+				}]
+			}, {
+				"featureType": "water",
+				"elementType": "all",
+				"stylers": [{
+					"color": "#021019"
+				}]
+			}]
+});
 
+var CompassView = new Class(App.view.Compass);
+CompassView.extend({
+	directionArrowEl: '#direction .direction-arrow',
+	headingEl: '#heading',
+	compassShieldEl: "#compass .shield"
+});
+CompassView = new CompassView({
+	destinationLocation: App.model.DestinationLocation
+});
 
 var ProView = new Class(App.view.View)
 ProView.extend({
@@ -95,7 +124,9 @@ ProView.extend({
 	destinationAltEl: "#target .altitude",
 	distanceEl: "#distance",
 	signalAccuracyEl: "#signal-accuracy",
-	mapView: MapView,
+	mapView: null,
+	compassView: null,
+	destinationLocationModel: null,
 	updateCurrentPosition: function(lat, lng, alt) {
 		var me = this;
 		$(me.currentLatEl).text(lat);
@@ -104,17 +135,29 @@ ProView.extend({
 	},
 	updateDestinationDistance: function(coords) {
 		var me = this;
-		var raw = coords.distanceTo(DestinationLocation.getCoords()).toFixed(3);
+		var raw = coords.distanceTo(me.destinationLocationModel.getCoords()).toFixed(3);
 		var wholes = raw.split(".")[0];
 		var decimals = raw.split(".")[1];
 		$(me.distanceEl).html("<div class='distance'><div class='wholes'>" + wholes + "</div><div class='decimals'>." + decimals + "</div><div class='unit'>m</div></div>");
 	},
-	setDestinationPosition: function() {
+	renderDestinationPosition: function(locationModel) {
 		var me = this;
-		var destinationPoint = DestinationLocation;
+		var destinationPoint = locationModel;
 		$(me.destinationLatEl).text(destinationPoint.getValue('lat'));
 		$(me.destinationLngEl).text(destinationPoint.getValue('lng'));
 		$(me.destinationAltEl).text(destinationPoint.getValue('alt'));
+	},
+	renderCurrentLocation: function (locationModel) {
+		var me = this;
+		var coords = locationModel.getCoords();
+		var localeCoors = coords.toLocaleString();
+		var localLat = localeCoors.split(", ")[0];
+		var localLng = localeCoors.split(", ")[1];
+		var localAlt = locationModel.getValue("alt");
+		var accuracy = Number(locationModel.getValue("accuracy"));
+		me.updateCurrentPosition(localLat, localLng, localAlt);
+		me.updateDestinationDistance(coords);
+		me.updateSignalAccuracy(accuracy);
 	},
 	updateSignalAccuracy: function(accuracy) {
 		var me = this;
@@ -123,26 +166,24 @@ ProView.extend({
 	initialize: function(config) {
 		var me = this;
 		config = config || {};
-		me.setDestinationPosition();
-		me.renderMap(52.187405, 18.896484, 8);
-		CurrentLocation.addEventListener("update", function() {
-			var coords = this.getCoords();
-			var localeCoors = coords.toLocaleString();
-			var localLat = localeCoors.split(", ")[0];
-			var localLng = localeCoors.split(", ")[1];
-			var localAlt = this.getValue("alt");
-			var accuracy = Number(this.getValue("accuracy"));
-			me.updateCurrentPosition(localLat, localLng, localAlt);
-			me.updateDestinationDistance(coords);
-			me.updateSignalAccuracy(accuracy);
-			//me.updateMap(this.getRawValue('lat'), this.getRawValue('lng'), 14, accuracy);
-		});
+		
+		me.mapView = config.mapView || me.mapView;
+		me.compassView = config.compassView || me.compassView;
+		me.destinationLocationModel = config.destinationLocationModel || me.destinationLocationModel;		
+		me.currentLocationModel = config.currentLocationModel || me.currentLocationModel;
+		
+		me.renderDestinationPosition(config.destinationLocationModel);
+		me.currentLocationModel.addEventListener("update", me.renderCurrentLocation ,me);
+		
+		me.renderCurrentLocation(me.currentLocationModel);
 		
 		ProView._parent.initialize.call(this, config);
-	},
-	renderMap: function () {
-		
 	}
 });
 
-ProView = new ProView();
+ProView = new ProView({
+	mapView: MapView,
+	compassView: CompassView,
+	destinationLocationModel: App.model.DestinationLocation,
+	currentLocationModel: App.model.CurrentLocation
+});

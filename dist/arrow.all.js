@@ -3,8 +3,17 @@ function App() {};
 function EmptyFn () {};
 
 App.Base = new Class({
-	initialize: function () {
-		//this.init.apply(this, arguments);
+	initialize: function (config) {
+		config = config || {};
+		var key;
+		
+		this.afterInit = config.afterInit || EmptyFn;
+		
+		for (key in config) {
+			this[key] = config[key];
+		}	
+		
+		this.afterInit.call(this);
 	}
 });
 App.Observable = {
@@ -261,21 +270,53 @@ App.controller = App.controller || {};
 
 App.controller.Controller = new Class(App.Base);
 
-App.controller.Controller.extend({
-	initialize: function (config) {
+App.controller.Controller.extend({});
+App.controller.Controller.implement([App.Observable]);
+App.controller = App.controller || {};
+
+App.controller.GPSController = new Class(App.controller.Controller);
+
+App.controller.GPSController.extend({
+	currentLocationModel: null,
+	destinationLocationModel: null,
+	initialize: function(config) {
+		var me = this;
 		config = config || {};
-		var key;
 		
-		this.init = config.init || EmptyFn;
+		me.currentLocationModel = config.currentLocationModel || me.currentLocationModel;
+		me.destinationLocationModel = config.destinationLocationModel || me.destinationLocationModel;
 		
-		for (key in config) {
-			this[key] = config[key];
-		}	
+		var geolocationHandler = (function (scope) {
+			return function () {
+				me.updateCurrentLocationModel.apply(scope, arguments);
+			}
+		})(me);
 		
-		this.init.call(this);
+		navigator.geolocation.watchPosition(geolocationHandler, function(err) {
+			console.log(err)
+		}, {
+			timeout: 500,
+			enableHighAccuracy: false,
+			maximumAge: Infinity
+		});
+		
+		App.controller.GPSController._parent.initialize.call(this, config);
+		
+	},
+	updateCurrentLocationModel: function(location) {
+		var me = this;
+		me.currentLocationModel.setCoords(location.coords);
+		me.destinationLocationModel.setValue('bearing', me.currentLocationModel.getCoords().finalBearingTo(me.destinationLocationModel.getCoords()))
+	},
+	setDestinationLocationModel: function(lat, lng, alt) {
+		me.destinationLocationModel.setCoords({
+			latitude: lat,
+			longitude: lng,
+			altitude: alt
+		});
 	}
 });
-App.controller.Controller.implement([App.Observable]);
+
 App.view = App.view || {};
 
 App.view.View = new Class(App.Base);
@@ -298,24 +339,13 @@ App.view.Map = new Class(App.view.View);
 
 App.view.Map.extend({
 	mapEl: null,
-	mapCurrentPositionPolygon: {
-		strokeOpacity: 0.8,
-		strokeWeight: 2,
-		fillOpacity: 0.35,
-		radius: 10
-	},
+	mapCurrentPositionPolygon: null,
+	mapCurrentPositionPolygonStyle: null,
 	mapStyle: null,
-	mapOptions: {
-		disableDefaultUI: true,
-		scrollwheel: false,
-		navigationControl: false,
-		mapTypeControl: false,
-		scaleControl: false,
-		draggable: false,
-	},
+	mapOptions: null,
 	lat: 0,
 	lng: 0,
-	zoom: 10,
+	zoom: 14,
 	model: null,
 	headDirectionArrow: function(heading) {
 		var me = this;
@@ -330,11 +360,23 @@ App.view.Map.extend({
 		
 		me.mapEl = config.mapEl || me.mapEl;
 		me.mapStyle = config.mapStyle || me.mapStyle;
-		me.mapOptions = config.mapOptions || me.mapOptions;
+		me.mapOptions = config.mapOptions || {
+			disableDefaultUI: true,
+			scrollwheel: false,
+			navigationControl: false,
+			mapTypeControl: false,
+			scaleControl: false,
+			draggable: false,
+		};
 		me.lat = config.lat || me.lat;
 		me.lng = config.lng || me.lng;
 		me.zoom = config.zoom || me.zoom;
-		me.mapCurrentPositionPolygon = config.mapCurrentPositionPolygon || me.mapCurrentPositionPolygon;
+		me.mapCurrentPositionPolygonStyle = config.mapCurrentPositionPolygonStyle || {
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillOpacity: 0.35,
+			radius: 10
+		};
 		me.model = config.model || me.model;
 		
 		
@@ -342,12 +384,13 @@ App.view.Map.extend({
 		
 		me.model = me.model || new App.model.LocationModel({});
 		me.model.addEventListener('update', me.onLocationUpdate, me);
+		me.onLocationUpdate(me.model);
 		
 		App.model.LocationModel._parent.initialize.call(this, config);
 	},
 	onLocationUpdate: function (model) {
-		var coords = model.getCoors();
-		return me.updateMap(coords.lat, coords.lat, me.zoom, me.zoom);
+		var me = this;
+		return me.updateMap(model.getRawValue('lat'), model.getRawValue('lng'), Number(model.getValue('accuracy')), me.zoom);
 	},
 	renderMap: function(lat, lng, zoom) {
 		var me = this;
@@ -364,7 +407,7 @@ App.view.Map.extend({
 		me.map.setCenter(center);
 		me.map.setZoom(zoom);
 		
-		me.mapCurrentPositionPolygon = new google.maps.Circle(me.mapCurrentPositionPolygon);
+		me.mapCurrentPositionPolygon = new google.maps.Circle(me.mapCurrentPositionPolygonStyle);
 		
 		me.mapCurrentPositionPolygon.setCenter(center);
 		me.mapCurrentPositionPolygon.setMap(me.map);
@@ -376,7 +419,7 @@ App.view.Map.extend({
 		me.map.setCenter(location);
 		me.map.setZoom(zoom_ || 10);
 		me.mapCurrentPositionPolygon.setCenter(location);
-		me.mapCurrentPositionPolygon.setRadius(radius || 100);
+		me.mapCurrentPositionPolygon.setRadius(radius_ || 100);
 	},
 	setLocation: function (lat, lng, zoom_, accuracy_) {
 		//@chainable
@@ -390,22 +433,98 @@ App.view = App.view || {};
 App.view.Compass = new Class(App.View);
 
 App.view.Compass.extend({
-	directionArrowEl: '#direction .direction-arrow',
-	headingEl: '#heading',
-	compassShieldEl: "#compass .shield",
 	headDirectionArrow: function(heading) {
 		var me = this;
-		var bearing = DestinationLocation.getValue('bearing');
+		var bearing = me.destinationLocation.getValue('bearing');
 		$(me.compassShieldEl).css('transform', 'rotate(' + (-heading) + 'deg)');
 		$(me.directionArrowEl).css('transform', 'rotate(' + (-heading + bearing) + 'deg)');
 		$(me.headingEl).text(heading.toFixed());
 	},
-	initialize: function () {
+	initialize: function (config) {
 		var me = this;
+		
+		config = config || {};
+		
+		me.destinationLocation = config.destinationLocation || config.destinationLocation;
+		
+		//TODO: handle errors
+		Compass.needGPS(function() {
+			$('.go-outside-message').show(); // Step 1: we need GPS signal
+		}).needMove(function() {
+			$('.go-outside-message').hide()
+			$('.move-and-hold-ahead-message').show(); // Step 2: user must go forward
+		}).init(function() {
+			$('.move-and-hold-ahead-message').hide(); // GPS hack is enabled
+		});
+		
 		Compass.watch((function(scope) {
 			return function(heading) {
 				scope.headDirectionArrow.call(scope, heading);
 			}
 		}(me)));
 	}
+});
+App.model.CurrentLocation = new App.model.LocationModel({
+		fields: ['accuracy'],
+		getters: {
+			accuracy: function(value) {
+				return value.toFixed(0);
+			}
+		}
+	});
+	App.model.CurrentLocation.beforeUpdate = function(coords) {
+		// silent update accuracy
+		this.setValue('accuracy', coords.accuracy, true);
+	};
+	
+App.model.DestinationLocation = new App.model.LocationModel({
+	fields: ['bearing']
+});
+
+App.controller.MainController = new Class(App.controller.Controller);
+
+App.controller.MainController.extend({
+	destinationLocationModel: null,
+	initialize: function(config) {
+		var me = this;
+		config = config || {};
+		var queryParams = me.parseQueryString();
+		
+		me.destinationLocationModel = config.destinationLocationModel || me.destinationLocationModel;
+		
+		if ("lat" in queryParams && "lng" in queryParams) {
+			me.setDestinationLocationModel(Number(queryParams.lat), Number(queryParams.lng), Number(queryParams.alt || 0));	
+		} else {
+			me.setDestinationLocationModel(54.403041, 18.590118, 5);
+		}
+		
+		App.controller.MainController._parent.initialize.call(this, config);
+		
+	},
+	setDestinationLocationModel: function(lat, lng, alt) {
+		var me = this;
+		me.destinationLocationModel.setCoords({
+			latitude: lat,
+			longitude: lng,
+			altitude: alt
+		});
+	},
+	parseQueryString: function() {
+		var str = window.location.search;
+		var objURL = {};
+		str.replace(
+		new RegExp("([^?=&]+)(=([^&]*))?", "g"), function($0, $1, $2, $3) {
+			objURL[$1] = $3;
+		});
+		return objURL;
+	}
+});
+
+App.controller.MainController = new App.controller.MainController({
+	destinationLocationModel: App.model.DestinationLocation
+});
+
+App.controller.GPSController = new App.controller.GPSController({
+	destinationLocationModel: App.model.DestinationLocation,
+	currentLocationModel: App.model.CurrentLocation
 });

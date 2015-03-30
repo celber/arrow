@@ -3,7 +3,16 @@ function App() {};
 function EmptyFn () {};
 
 App.Base = new Class({
-	initialize: function () {
-		//this.init.apply(this, arguments);
+	initialize: function (config) {
+		config = config || {};
+		var key;
+		
+		this.afterInit = config.afterInit || EmptyFn;
+		
+		for (key in config) {
+			this[key] = config[key];
+		}	
+		
+		this.afterInit.call(this);
 	}
 });
