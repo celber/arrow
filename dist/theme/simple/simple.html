@@ -1,0 +1,48 @@
+<!doctype html>
+
+<html lang="en" manifest="cache.manifest">
+<head>
+  <meta charset="utf-8">
+
+  <title>Arrow</title>
+  <meta name="description" content="Browser geochaching tool">
+  <meta name="author" content="Dariusz Jakubowski <celber@me.com>">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="../../vendor/foundation/css/normalize.css">
+  <link rel="stylesheet" href="../../vendor/foundation/css/foundation.css">
+  <link rel="stylesheet" href="../../vendor/fontawesome/css/font-awesome.min.css">
+  
+  <link rel="stylesheet" href="styles.css?v=1.0">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  
+  <script src="../../vendor/class.js/src/class.js"></script>
+  <script src="../../vendor/jquery/dist/jquery.min.js"></script>
+  <script src="../../vendor/foundation/js/foundation.min.js"></script>
+  <script src="../../vendor/compass.js/lib/compass.js"></script>
+  <script src="../../vendor/geodesy/vector3d.js"></script>
+  <script src="../../vendor/geodesy/latlon-ellipsoidal.js"></script>
+  <script src="../../vendor/geodesy/latlon-vincenty.js"></script>
+  <script src="../../vendor/geodesy/dms.js"></script>
+  
+  <script src="../../arrow.all.js"></script>
+</head>
+
+<body class="container">
+	<div id="navigation" class="row">		
+		<div id="direction" class="small-12 small-text-center columns">
+			<div class="direction-arrow">&nbsp;</div>
+		</div>
+	</div>
+	<div class="row">
+		<div id="signal-accuracy">0</div>
+		<div id="distance" class="small-12 small-text-center columns">
+			
+		</div>
+	</div>
+	<script src="simple.js"></script>
+</body>
+</html>

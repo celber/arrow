@@ -1,0 +1,124 @@
+@font-face {
+	font-family: 'LCDBOLD';
+	src: url('./LCDBOLD.eot');
+	src: local('LCDBOLD'), url('./LCDBOLD.woff') format('woff'), url('./LCDBOLD.ttf') format('truetype');
+}
+
+body {
+	max-height: 100%;
+	overflow: hidden;
+}
+
+.container {
+	background: #000;
+	color: #fff;
+}
+
+.degree:after {
+	content: "°";
+}
+
+#distance {
+	font-size: 49pt;
+	font-weight: 100;
+	background-color: #003945;
+	min-height: 100px;
+}
+
+.distance div{
+	display: inline;
+}
+
+.distance .decimals, .distance .unit {
+	color: #85898D;
+	font-size: 28pt;
+}
+
+#target {
+	font-family: 'LCDBOLD' !important;
+	color: black;
+	padding: 10px;
+	background-color: #F1F1F1;
+}
+
+#position {
+	font-family: 'LCDBOLD' !important;
+	color: black;
+	padding: 10px;
+	background-color: #F6F6F6;
+}
+
+#compass {
+	padding: 30px;
+}
+
+#heading {
+	position: relative;
+	top: 50px;
+}
+
+#compass .shield {
+	background-image: url("./img/compass.png");
+	background-repeat: no-repeat;
+	background-size: contain;
+	height: 200px;
+	width: 200px;
+	bottom: -160px;
+	background-position: center center;
+	position: absolute;
+	margin: auto;
+	right: calc(50% - 100px);
+}
+
+#signal-accuracy {
+	color: #666;
+	display: block;
+	position: absolute;
+	right: 20px;
+	top: 10px;
+}
+
+#signal-accuracy:before {
+	content: "ACCURACY: ";
+}
+
+
+#signal-accuracy:after {
+	content: "m";
+}
+
+#map {
+	height: 400px;
+}
+
+#navigation {
+	height: 40%;
+}
+
+#direction {
+	padding: 40px;
+	height: 100%;
+}
+
+#direction .direction-arrow {
+	z-index: 2;
+    -webkit-transition: transform 1s ease-in;
+     -moz-transition: transform 1s ease-in;
+       -o-transition: transform 1s ease-in;
+          transition: transform 1s ease-in;
+	background-image: url("./img/direction_arrow.png");
+	background-repeat: no-repeat;
+	background-size: contain;
+	height: 100px;
+	width: 100px;
+	background-position: center center;
+	position: relative;
+	margin: auto;
+}
+
+#radar {
+	background-image: url("./img/radar.gif");
+	opacity: .5;
+	background-position: -2px -2px;
+	height: 600px;
+}
