@@ -79,7 +79,7 @@ App.model.Field = new Class({
 		
 		if (config.value) {
 			this.setValue(config.value);
-		} else if (config.defaultValue) {
+		} else if (config.defaultValue !== undefined) {
 			this.value = config.defaultValue;
 		} else {
 			this.setValue(null);
@@ -126,7 +126,7 @@ App.model.Model.extend({
 				name: key,
 				setter: (config.setters || {})[key],
 				getter: (config.getters || {})[key],
-				defaultValue: (config.defaultvalues || {})[key]
+				defaultValue: (config.defaultValues || {})[key]
 			});
 		}
 		
@@ -209,6 +209,7 @@ App.model.LocationModel.extend({
 		config.fields = config.fields || [];
 		config.getters = config.getters || {};
 		
+		/*
 		config.fields.push("lat");
 		config.fields.push("lng");
 		config.fields.push("alt");
@@ -216,6 +217,22 @@ App.model.LocationModel.extend({
 		config.getters['lat'] = this.latGetter;
 		config.getters['lng'] = this.lngGetter;
 		config.getters['alt'] = this.altGetter;
+		*/
+		this.addField({
+			name: 'lat',
+			getter: this.latGetter,
+			defaultValue: 0
+		});
+		this.addField({
+			name: 'lng',
+			getter: this.lngGetter,
+			defaultValue: 0
+		});
+		this.addField({
+			name: 'alt',
+			getter: this.altGetter,
+			defaultValue: 0
+		});
 		
 		App.model.LocationModel._parent.initialize.call(this, config);
 
@@ -250,7 +267,7 @@ App.model.LocationModel.extend({
 		var raw = this.getRawValue('alt');
 		var wholes;
 		var decimals;
-		if (raw == 0) {
+		if (!raw) {
 			return "not available"
 		} else {/*
 
@@ -347,13 +364,6 @@ App.view.Map.extend({
 	lng: 0,
 	zoom: 14,
 	model: null,
-	headDirectionArrow: function(heading) {
-		var me = this;
-		var bearing = DestinationLocation.getValue('bearing');
-		$(me.compassShieldEl).css('transform', 'rotate(' + (-heading) + 'deg)');
-		$(me.directionArrowEl).css('transform', 'rotate(' + (-heading + bearing) + 'deg)');
-		$(me.headingEl).text(heading.toFixed());
-	},
 	initialize: function (config) {
 		var me = this;
 		config = config || {};
@@ -377,8 +387,16 @@ App.view.Map.extend({
 			fillOpacity: 0.35,
 			radius: 10
 		};
-		me.model = config.model || me.model;
 		
+		me.mapDestinationPositionPolygonStyle = config.mapDestinationPositionPolygonStyle || {
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillOpacity: 0.35,
+			radius: 10
+		};
+		
+		me.model = config.model || me.model;
+		me.destination = config.destination || me.destination;
 		
 		me.renderMap(me.lat, me.lng, me.zoom);
 		
@@ -412,6 +430,9 @@ App.view.Map.extend({
 		me.mapCurrentPositionPolygon.setCenter(center);
 		me.mapCurrentPositionPolygon.setMap(me.map);
 		
+		
+		me.mapDestinationPositionPolygon = new google.maps.Circle(me.mapDestinationPositionPolygonStyle);
+		me.mapDestinationPositionPolygon.setMap(me.map);
 	},
 	updateMap: function(lat, lng, radius_, zoom_) {
 		var me = this;
@@ -420,6 +441,18 @@ App.view.Map.extend({
 		me.map.setZoom(zoom_ || 10);
 		me.mapCurrentPositionPolygon.setCenter(location);
 		me.mapCurrentPositionPolygon.setRadius(radius_ || 100);
+		
+		me.updateDestinationPolygon();
+	},
+	updateDestinationPolygon: function () {
+		var me = this;
+		var location;
+		
+		if (me.destination) {
+			location = new google.maps.LatLng(me.destination.getRawValue('lat'), me.destination.getRawValue('lng'));
+			
+			me.mapDestinationPositionPolygon.setCenter(location);	
+		}
 	},
 	setLocation: function (lat, lng, zoom_, accuracy_) {
 		//@chainable
@@ -470,6 +503,9 @@ App.model.CurrentLocation = new App.model.LocationModel({
 			accuracy: function(value) {
 				return value.toFixed(0);
 			}
+		},
+		defaultValues: {
+			accuracy: 0
 		}
 	});
 	App.model.CurrentLocation.beforeUpdate = function(coords) {

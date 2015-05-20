@@ -14,7 +14,7 @@ App.model.Field = new Class({
 		
 		if (config.value) {
 			this.setValue(config.value);
-		} else if (config.defaultValue) {
+		} else if (config.defaultValue !== undefined) {
 			this.value = config.defaultValue;
 		} else {
 			this.setValue(null);

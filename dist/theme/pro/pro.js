@@ -5,11 +5,20 @@ MapView.extend({
 
 MapView = new MapView({
 	model: App.model.CurrentLocation,
+	destination: App.model.DestinationLocation,
 	mapCurrentPositionPolygonStyle: {
 			strokeColor: '#47DD8E',
 			strokeOpacity: 0.8,
 			strokeWeight: 2,
 			fillColor: '#3FC57E',
+			fillOpacity: 0.35,
+			radius: 10
+		},
+	mapDestinationPositionPolygonStyle: {
+			strokeColor: '#f02020',
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillColor: '#f01010',
 			fillOpacity: 0.35,
 			radius: 10
 		},
@@ -138,7 +147,14 @@ ProView.extend({
 		var raw = coords.distanceTo(me.destinationLocationModel.getCoords()).toFixed(3);
 		var wholes = raw.split(".")[0];
 		var decimals = raw.split(".")[1];
-		$(me.distanceEl).html("<div class='distance'><div class='wholes'>" + wholes + "</div><div class='decimals'>." + decimals + "</div><div class='unit'>m</div></div>");
+		
+		// TODO: better signal recognition
+		if (wholes > 100000) { 
+			$(me.distanceEl).html("<div class='distance'>NO SIGNAL</div>");
+		} else {
+			$(me.distanceEl)
+			.html("<div class='distance'><div class='wholes'>" + wholes + "</div><div class='decimals'>." + decimals + "</div><div class='unit'>m</div></div>");	
+		}
 	},
 	renderDestinationPosition: function(locationModel) {
 		var me = this;

@@ -8,6 +8,7 @@ App.model.LocationModel.extend({
 		config.fields = config.fields || [];
 		config.getters = config.getters || {};
 		
+		/*
 		config.fields.push("lat");
 		config.fields.push("lng");
 		config.fields.push("alt");
@@ -15,6 +16,22 @@ App.model.LocationModel.extend({
 		config.getters['lat'] = this.latGetter;
 		config.getters['lng'] = this.lngGetter;
 		config.getters['alt'] = this.altGetter;
+		*/
+		this.addField({
+			name: 'lat',
+			getter: this.latGetter,
+			defaultValue: 0
+		});
+		this.addField({
+			name: 'lng',
+			getter: this.lngGetter,
+			defaultValue: 0
+		});
+		this.addField({
+			name: 'alt',
+			getter: this.altGetter,
+			defaultValue: 0
+		});
 		
 		App.model.LocationModel._parent.initialize.call(this, config);
 
@@ -49,7 +66,7 @@ App.model.LocationModel.extend({
 		var raw = this.getRawValue('alt');
 		var wholes;
 		var decimals;
-		if (raw == 0) {
+		if (!raw) {
 			return "not available"
 		} else {/*
 

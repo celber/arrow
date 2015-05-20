@@ -17,7 +17,7 @@ App.model.Model.extend({
 				name: key,
 				setter: (config.setters || {})[key],
 				getter: (config.getters || {})[key],
-				defaultValue: (config.defaultvalues || {})[key]
+				defaultValue: (config.defaultValues || {})[key]
 			});
 		}
 		

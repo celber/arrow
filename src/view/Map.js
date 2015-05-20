@@ -11,13 +11,6 @@ App.view.Map.extend({
 	lng: 0,
 	zoom: 14,
 	model: null,
-	headDirectionArrow: function(heading) {
-		var me = this;
-		var bearing = DestinationLocation.getValue('bearing');
-		$(me.compassShieldEl).css('transform', 'rotate(' + (-heading) + 'deg)');
-		$(me.directionArrowEl).css('transform', 'rotate(' + (-heading + bearing) + 'deg)');
-		$(me.headingEl).text(heading.toFixed());
-	},
 	initialize: function (config) {
 		var me = this;
 		config = config || {};
@@ -41,8 +34,16 @@ App.view.Map.extend({
 			fillOpacity: 0.35,
 			radius: 10
 		};
-		me.model = config.model || me.model;
 		
+		me.mapDestinationPositionPolygonStyle = config.mapDestinationPositionPolygonStyle || {
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillOpacity: 0.35,
+			radius: 10
+		};
+		
+		me.model = config.model || me.model;
+		me.destination = config.destination || me.destination;
 		
 		me.renderMap(me.lat, me.lng, me.zoom);
 		
@@ -76,6 +77,9 @@ App.view.Map.extend({
 		me.mapCurrentPositionPolygon.setCenter(center);
 		me.mapCurrentPositionPolygon.setMap(me.map);
 		
+		
+		me.mapDestinationPositionPolygon = new google.maps.Circle(me.mapDestinationPositionPolygonStyle);
+		me.mapDestinationPositionPolygon.setMap(me.map);
 	},
 	updateMap: function(lat, lng, radius_, zoom_) {
 		var me = this;
@@ -84,6 +88,18 @@ App.view.Map.extend({
 		me.map.setZoom(zoom_ || 10);
 		me.mapCurrentPositionPolygon.setCenter(location);
 		me.mapCurrentPositionPolygon.setRadius(radius_ || 100);
+		
+		me.updateDestinationPolygon();
+	},
+	updateDestinationPolygon: function () {
+		var me = this;
+		var location;
+		
+		if (me.destination) {
+			location = new google.maps.LatLng(me.destination.getRawValue('lat'), me.destination.getRawValue('lng'));
+			
+			me.mapDestinationPositionPolygon.setCenter(location);	
+		}
 	},
 	setLocation: function (lat, lng, zoom_, accuracy_) {
 		//@chainable

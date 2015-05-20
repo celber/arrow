@@ -4,6 +4,9 @@ App.model.CurrentLocation = new App.model.LocationModel({
 			accuracy: function(value) {
 				return value.toFixed(0);
 			}
+		},
+		defaultValues: {
+			accuracy: 0
 		}
 	});
 	App.model.CurrentLocation.beforeUpdate = function(coords) {
